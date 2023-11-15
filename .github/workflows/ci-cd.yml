@@ -5,17 +5,52 @@ on:
       - main
   workflow_dispatch:
 jobs:
-   build-test-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get code
-        uses: actions/checkout@v4
-
-      - name: Get code
-        uses: actions/setup-node@v4
+   test-build-deploy:
+   
+    permissions:
+      pages: write     
+      id-token: write   
   
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+   
+    environment:
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
+
+  
+    runs-on: ubuntu-latest
+    
+    steps:
+ 
+      - name: main
+        uses: actions/checkout@v4 # uses an action that has already been created
+
+  
+      - name: Set up node
+        uses: actions/setup-node@v4 
         with:
-          path: './dist' 
+          node-version: "21.2.0"
+
+     
+      - run: npm ci 
+
+
+      - run: npm test
+      
+      
+      - run: npm run build
+      
+      
+      - name: Set up Pages
+        uses: actions/configure-pages@v4
+      
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: './dist'
+
+    
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
